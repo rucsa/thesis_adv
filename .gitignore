@@ -1,0 +1,7 @@
+# ignore data files #
+
+*.csv
+*.png
+*.hdf5
+*.txt
+*.xlsx
