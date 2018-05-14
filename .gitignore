@@ -5,3 +5,5 @@
 *.hdf5
 *.txt
 *.xlsx
+*.xml
+*.iml
