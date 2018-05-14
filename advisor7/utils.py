@@ -37,44 +37,6 @@ def encode_sector (df):
     encoding = encoding.set_index('Security')
     return encoding
 
-def encode_region (df):
-    sector = df ['Region']
-    encoding = []
-    for index, row in sector.iteritems():
-        if (row == 'Asia ex Japan'):
-            tup = (index, 1)
-            encoding.append(tup)
-        if (row == 'Canada'):
-            encoding.append((index, 2))
-        if (row == 'Emerging Markets'):
-            encoding.append((index, 3))
-        if (row == 'Europe ex UK'):
-            encoding.append((index, 4))
-        if (row == 'Japan'):
-            encoding.append((index, 5))
-        if (row == 'Other'):
-            encoding.append((index, 6))
-        if (row == 'UK'):
-            encoding.append((index, 7))
-        if (row == 'USA'):
-            encoding.append((index, 8))
-    encoding = pd.DataFrame(encoding, columns=['Security', 'Region'])
-    encoding = encoding.set_index('Security')
-    return encoding
-
-def encode_asset (df):
-    sector = df ['Asset']
-    encoding = []
-    for index, row in sector.iteritems():
-        if (row == 'Equity'):
-            tup = (index, 1)
-            encoding.append(tup)
-        if (row == 'Bond'):
-            encoding.append((index, 2))
-    encoding = pd.DataFrame(encoding, columns=['Security', 'Asset'])
-    encoding = encoding.set_index('Security')
-    return encoding
-
 def encode_binary (df):
     bribery = df['Bribery']
     ethics = df['Ethics']
@@ -148,7 +110,7 @@ def score_sectors(df, criterion, score):
     if (type(criterion)==list):
         for row in df.itertuples():
              s = getattr(row, "Sector")
-             n = getattr(row, "Security") 
+             n = getattr(row, "Name") 
              if n not in score:
                  score[n] = []
 
@@ -164,7 +126,7 @@ def score_feature(df, score, feature):
     minimum = min(col)
     maximum = max(col)
     for row in df.itertuples():
-        n = getattr(row, "Security") 
+        n = getattr(row, "Name") 
         a = getattr(row, feature) 
         if n not in score:
             score[n] = []

@@ -8,9 +8,9 @@ from sklearn import preprocessing
 
 data = pd.read_excel('data/SP1500.xlsx')
 #data = data.set_index('Security')
-if False:
+if True:
     data = data.drop('Ticker symbol', axis = 1)
-    data = data.drop('Region', axis = 1)
+    #data = data.drop('Region', axis = 1)
 
 #fetaures = list(data.columns.values)
 
@@ -22,7 +22,7 @@ feature_set = ['Inventory_turnover', 'Revenue', 'Gross_profit',
 size = ut.encodeMarketCap(data)
 data = pd.concat([data, size], axis=1)
 data = ut.scaleOutMarketCap(data, feature_set)
-if False:
+if True:
     data.loc[:,'Market_cap'] = data.loc[:,'Market_cap']/1000
     data.loc[:,'Revenue'] = data.loc[:,'Revenue']/100
     data.loc[:,'Gross_profit'] = data.loc[:,'Gross_profit']/100
@@ -39,10 +39,15 @@ if True:
     data = pd.concat([data, encoded_ethics, encoded_bribery], axis=1)
 
 # encode sector
-if False:
+if True:
     encoded_sector = ut.encode_sector(data)
-    data = data.drop('Sector', axis = 1)
+    #data = data.drop('Sector', axis = 1)
+    data.rename(columns={'Sector': 'Sector_string'}, inplace=True)
     data = pd.concat([data, encoded_sector], axis=1)
+    
+    encoded_asset = ut.encode_asset(data)
+    data = data.drop('Asset', axis = 1)
+    data = pd.concat([data, encoded_asset], axis=1)
 
 #data = data.dropna(axis = 0, how = 'any')
 #df = data[['Inventory_turnover', 'Market_cap']].copy()
@@ -68,4 +73,4 @@ if False:
     data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns, index=data.index) 
     data = pd.concat([data, y], axis='columns')
     
-data.to_hdf('SP1500.hdf5', 'Datataset1/X')
+data.to_hdf('similarity/SP1500_similarity.hdf5', 'Datataset1/X')

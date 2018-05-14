@@ -117,6 +117,26 @@ def encodeMarketCap(df):
     encoded_size = encoded_size.set_index('Security')
     return encoded_size
 
+def encodeSize(df):
+    size = df['Size']
+    encoded_size = []
+    for index, row in size.iteritems():
+        if (row == 4):
+            encoded_size.append((index, 1)) #'large cap'
+        elif (row == 3):
+            encoded_size.append((index, round(1/2, 2))) #'mid cap'
+        elif (row == 2):
+             encoded_size.append((index, round(1/3, 2))) #'small cap'
+        elif (row == 1):
+             encoded_size.append((index, round(1/4, 2))) #'micro cap'
+        elif (row == 0):
+            encoded_size.append((index, 0))  #'nano cap'
+        else: 
+            encoded_size.append((index, math.nan))
+    encoded_size = pd.DataFrame(encoded_size, columns=['Security', 'Size'])
+    encoded_size = encoded_size.set_index('Security')
+    return encoded_size
+
 def normalize_value(value, minimum, maximum, x = 1, y = 100):
     return ((value-minimum) / (maximum-minimum)) * (y - x) + x
 
@@ -164,7 +184,10 @@ def score_feature(df, score, feature):
     minimum = min(col)
     maximum = max(col)
     for row in df.itertuples():
-        n = getattr(row, "Security") 
+        try:
+            n = getattr(row, "Security") 
+        except AttributeError:
+            n = getattr(row, "Index") 
         a = getattr(row, feature) 
         if n not in score:
             score[n] = []
@@ -262,3 +285,56 @@ def check_portfolio_alloc (exposure_dict, security_dict):
 def sort_dict(unsorted_dict):
     sorted_list=sorted(unsorted_dict.items(), key=lambda x: x[1])
     return OrderedDict(sorted_list)
+
+def dict_to_df(port_dict, columns, X):
+    held = pd.DataFrame(columns = columns)
+    for k, v in port_dict.items():
+        current_security = X.loc[k].to_frame(name = X.loc[k].name).T
+        held = pd.concat([held, current_security], axis = 0)
+    return held
+
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from collections import Counter
+import numpy as np
+def get_recommendations_from_clusters(X, held, all_data, model, max_clusters):
+    c = 2
+    found = False
+    while (not found and c < max_clusters):
+        print ("Trying to split in {} clusters".format(c))
+        model.n_clusters = c
+        data_clusters = model.fit_predict(X)
+        countX = Counter(data_clusters)
+        if isinstance (model, KMeans):
+            port_clusters = model.predict(held)
+        elif isinstance(model, AgglomerativeClustering):
+            try:
+                port_clusters = model.fit_predict(held)
+            except ValueError: #'Cannot extract more clusters than samples: ERROR' #
+                print ("Warn: Passing n_clusters > n_leaves ValueError")
+                pass
+        else:
+            raise ValueError('Err in function [get_recommendations_from_clusters]: type of clustering algorithm unknown.')
+        countP = Counter(port_clusters)
+        
+        if len(countP) + 4 <= len(countX):
+            found = True
+            countX_keys = list(countX.keys())
+            countP_keys = list(countP.keys())
+            # find the unused cluster(s)
+            diff = np.setdiff1d(countX_keys, countP_keys)
+            # save securities that are in the new cluster(s)
+            option_list = pd.DataFrame()
+            for i in range(0, len(data_clusters)):
+                for j in range (0, len(diff)):
+                    if data_clusters[i] == diff[j]:
+                        # the new security to add will be taken from 
+                        current_security = all_data.iloc[i].to_frame(name = all_data.iloc[i].name).T
+                        current_security['Cluster'] = data_clusters[i]
+                        option_list = pd.concat([option_list, current_security], axis = 0)
+        else:
+           c = c+1
+    try:
+        return option_list, countP_keys
+    except UnboundLocalError:
+        print ("Reached max_clusters of {}. Try another portfolio".format(max_clusters))
+        return False

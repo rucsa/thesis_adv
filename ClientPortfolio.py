@@ -22,12 +22,12 @@ class ClientPortfolio(object):
     def getCapital(self):
         return self.client['Capital']
     
+    def setExposure(self, security, new_exposure):
+        self.portfolio[security] = new_exposure
+    
     def setShares(self, security, new_shares):
         print ('Modified number of shares for security {} from {} shares to {} shares \n'.format(security, self.portfolio[security], new_shares))
         self.portfolio[security] = new_shares
-        
-    def setExtraExposure(self, new_exposure):
-        self.extra_exposure = new_exposure
         
     def addNewSecurity(self, security, shares):
         self.portfolio[security] = shares
@@ -41,7 +41,7 @@ class ClientPortfolio(object):
         self.portfolio[security] = self.portfolio[security] - shares_to_delete
         print('Deleted {} shares from security {}. Remaining {} shares '.format(shares_to_delete, security, self.portfolio[security]))
             
-    def refine_exposure(self, security_dict, exposure_threshold = 0.05):
+    def refine_exposures(self, security_dict, exposure_threshold = 0.05):
         for key, shares in self.portfolio.items():
             if (key != 'nan'):
                 current_security = security_dict[key]
@@ -57,6 +57,24 @@ class ClientPortfolio(object):
                 break
         print ('Total extra exposure in the portfolio {}'.format(self.extra_exposure))
             
+    def recommended_allocation (risk_profile):
+        alloc = {}
+        if (risk_profile == 'Defensive'):
+            alloc['Stocks'] = 10
+        elif (risk_profile == 'Moderate Defensive'):
+            alloc['Stocks'] = 25
+        elif (risk_profile == 'Balanced'):
+            alloc['Stocks'] = 40
+        elif (risk_profile == 'Moderate Offensive'):
+            alloc['Stocks'] = 60
+        elif (risk_profile == 'Offensive'):
+            alloc['Stocks'] = 75
+        else:
+            print ('Risk profile not found, set to default 50-50')
+            alloc['Stocks'] = 50
+        alloc['Bonds'] = 100 - alloc['Stocks']
+        return alloc['Stocks'], alloc['Bonds']
+    
     def complete_exposure(self, security_dict, exposure_threshold = 0.05):
         recommendations = recom.rank_stocks('Mid')  
         pop = recom.recommend_stock(recommendations)  
