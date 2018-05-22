@@ -48,7 +48,7 @@ def visualize(portfolio, options_list, filename):
     # Region
     try:
         region = Counter(options_list['Region'])
-        out_reg_encoding = vut.decode_sector(region)
+        out_reg_encoding = vut.dencode_region(region)
     except KeyError:
         out_reg_encoding = Counter(options_list['Region_string'])
 

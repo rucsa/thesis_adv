@@ -62,6 +62,40 @@ def encode_region (df):
     encoding = encoding.set_index('Security')
     return encoding
 
+def encode_new_region (df):
+    sector = df ['Region']
+    encoding = []
+    for index, row in sector.iteritems():
+        if (row == 'East Asia & Pacific'):
+            tup = (index, 6.921)
+            encoding.append(tup)
+        if (row == 'Europe & Central Asia'):
+            encoding.append((index, 8.448))
+        if (row == 'Latin America & Caribbean'):
+            encoding.append((index, 7.642))
+        if (row == 'Middle East & North Africa'):
+            encoding.append((index, 7))
+        if (row == 'North America'):
+            encoding.append((index, 10))
+        if (row == 'South Asia'):
+            encoding.append((index, 3.625))
+        if (row == 'Sub-Saharan Africa'):
+            encoding.append((index, 2.812))
+    encoding = pd.DataFrame(encoding, columns=['Security', 'Region'])
+    encoding = encoding.set_index('Security')
+    return encoding
+
+def encode_sector_from_bc(df, keys, vals):
+    sector = df ['Sector_string']
+    encoding = []
+    for index, row in sector.iteritems():
+        for i in range(0, len(keys)):
+            if (row == keys[i]):
+                encoding.append((index, vals[i]))
+    encoding = pd.DataFrame(encoding, columns=['Security', 'Sector'])
+    encoding = encoding.set_index('Security')
+    return encoding
+
 def encode_asset (df):
     sector = df ['Asset']
     encoding = []
@@ -296,27 +330,31 @@ def dict_to_df(port_dict, columns, X):
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from collections import Counter
 import numpy as np
-def get_recommendations_from_clusters(X, held, all_data, model, max_clusters):
+from sklearn import metrics
+
+def get_recommendations_from_clusters(X, held, all_data, model, max_clusters, dif):
     c = 2
     found = False
     while (not found and c < max_clusters):
+        Y = X.copy()
         print ("Trying to split in {} clusters".format(c))
         model.n_clusters = c
-        data_clusters = model.fit_predict(X)
-        countX = Counter(data_clusters)
-        if isinstance (model, KMeans):
-            port_clusters = model.predict(held)
-        elif isinstance(model, AgglomerativeClustering):
-            try:
-                port_clusters = model.fit_predict(held)
-            except ValueError: #'Cannot extract more clusters than samples: ERROR' #
-                print ("Warn: Passing n_clusters > n_leaves ValueError")
-                pass
-        else:
-            raise ValueError('Err in function [get_recommendations_from_clusters]: type of clustering algorithm unknown.')
-        countP = Counter(port_clusters)
+        model.fit_predict(Y)
+        labels = model.labels_
+        # add column with clusters
+        Y = pd.concat([Y, pd.DataFrame(labels, index = list(Y.index.values), columns = ['Cluster'])], axis = 1)
+        # separate stocks held from data 
+        Z = Y.loc[Y.index.isin(list(held.index.tolist()))] # stocks held
+        Y = Y.loc[~Y.index.isin(list(held.index.tolist()))] # rest of the stocks
+        clusters_y = Y['Cluster'].values
+        countX = Counter(clusters_y)
+        countP = Counter(Z['Cluster'].values)
         
-        if len(countP) + 4 <= len(countX):
+        # evaluate clusters
+        print("silhouette_score = {}".format(metrics.silhouette_score(X.as_matrix(), labels, metric='euclidean')))
+        print("calinski_harabaz_score = {}".format(metrics.calinski_harabaz_score(X.as_matrix(), labels)))
+
+        if len(countP) + dif <= len(countX):
             found = True
             countX_keys = list(countX.keys())
             countP_keys = list(countP.keys())
@@ -324,17 +362,25 @@ def get_recommendations_from_clusters(X, held, all_data, model, max_clusters):
             diff = np.setdiff1d(countX_keys, countP_keys)
             # save securities that are in the new cluster(s)
             option_list = pd.DataFrame()
-            for i in range(0, len(data_clusters)):
+            rest_of_stocks = pd.DataFrame()
+            for i in range(0, len(clusters_y)):
+                match = False
                 for j in range (0, len(diff)):
-                    if data_clusters[i] == diff[j]:
+                    if clusters_y[i] == diff[j]:
                         # the new security to add will be taken from 
-                        current_security = all_data.iloc[i].to_frame(name = all_data.iloc[i].name).T
-                        current_security['Cluster'] = data_clusters[i]
+                        current_security = Y.iloc[i].to_frame(name = Y.iloc[i].name).T
+                        current_security['Cluster'] = clusters_y[i]
                         option_list = pd.concat([option_list, current_security], axis = 0)
+                        match = True
+                if match == False:
+                    current_security = Y.iloc[i].to_frame(name = Y.iloc[i].name).T
+                    current_security['Cluster'] = clusters_y[i]
+                    rest_of_stocks = pd.concat([rest_of_stocks, current_security], axis = 0)
+                        
         else:
            c = c+1
     try:
-        return option_list, countP_keys
+        return option_list, countP_keys, rest_of_stocks, labels
     except UnboundLocalError:
         print ("Reached max_clusters of {}. Try another portfolio".format(max_clusters))
         return False

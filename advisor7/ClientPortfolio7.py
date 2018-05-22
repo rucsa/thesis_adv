@@ -275,18 +275,18 @@ class ClientPortfolio(object):
             self.deleteSecurity(key, security_dict)
         print ('Deleted {} {}'.format(criterion, sector))
         
-    def add_to_portfolio_as_preferences(self, allSecurities, preferences):
+    def add_to_portfolio_as_preferences(self, allSecurities, stock_preferences, bond_preferences):
         print ("Checking your cash...")
         if (self.cash > 0):
-            stocks_alloc, bonds_alloc = self.current_allocation(allSecurities)
-            recommended_stock_alloc, recommended_bonds_alloc = self.recommended_allocation(self.client['Risk_profile'])
+            stocks_alloc, bonds_alloc = self.current_asset_allocation(allSecurities)
+            recommended_stock_alloc, recommended_bonds_alloc = self.recommended_asset_allocation(self.client['Risk_profile'])
             print ("You have {} % exposure in cash \n".format(self.cash))
             if (stocks_alloc < recommended_stock_alloc):
                 pyfancy.pyfancy().cyan("You don't have as many stocks as recommended, let's buy some \n").output()
-                self.addStocksToBalance(allSecurities, stocks_alloc, recommended_stock_alloc, preferences, True)
+                self.addStocksToBalance(allSecurities, stocks_alloc, recommended_stock_alloc, stock_preferences, True)
             if (bonds_alloc < recommended_bonds_alloc):
                 pyfancy.pyfancy().cyan("You don't have as many bonds as recommended, let's buy some \n").output()
-                self.addBondsToBalance(allSecurities, bonds_alloc, recommended_bonds_alloc, True)
+                self.addBondsToBalance(allSecurities, bonds_alloc, recommended_bonds_alloc, bond_preferences, True)
     
     def extract_item_with_most_exposure(self, portfolio):
         sort_exposures_desc = []
@@ -295,7 +295,7 @@ class ClientPortfolio(object):
         return sort_exposures_desc
     
     def remove_one_item(self, recommendations, asset_type, allSecurities):
-        stocks_alloc, bonds_alloc = self.current_allocation(allSecurities)
+        stocks_alloc, bonds_alloc = self.current_asset_allocation(allSecurities)
         if (asset_type == 'Equity' or asset_type == 'equity' or asset_type == 'stock'):
             if stocks_alloc == 0:
                 print ("You have no stocks to delete")

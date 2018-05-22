@@ -101,12 +101,12 @@ while (user_in != 'exit'):
     print ("5 -  Refine sector allocation")
     print ("6 -  Refine region allocation")
     print ("7 -  Refine exposure to max 5% per security")
-    print ("7 -  Buy stocks and bonds with cash")
+    print ("8 -  Buy stocks and bonds with cash")
     print ("0 - Exit")
     
     user_in = [int(x) for x in input('Insert your options.. ').split()]
     for val in user_in:
-        if (val < 0 or val > 7):
+        if (val < 0 or val > 8):
             print ('Inserted value unknown.. Try again.. ')
             user_in = [int(x) for x in input('Insert your options.. ').split()]
             
@@ -152,4 +152,4 @@ while (user_in != 'exit'):
         
     if (8 in user_in):
         pyfancy.pyfancy().cyan("Spending cash...").output()
-        client_portfolio.add_to_portfolio_as_preferences(allSecurities, stock_preferences)
+        client_portfolio.add_to_portfolio_as_preferences(allSecurities, stock_preferences, bonds_preferences)

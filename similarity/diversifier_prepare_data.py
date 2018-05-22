@@ -55,8 +55,13 @@ Y.to_hdf('diversifier_data.hdf5', 'Y', format = 'table')
 def covariance(name_stock1, name_stock2, var_market):
     beta1 = round(all_data.loc[name_stock1]['Adjusted_beta'], 3)
     beta2 = round(all_data.loc[name_stock2]['Adjusted_beta'], 3)
-    
     return round(beta1 * beta2 * var_market, 3)
+
+def financial_correlation(stock1, stock2):
+    cov = covariance(stock1, stock2, 13.16)
+    vol1 = round(all_data.loc[stock1]['Volatility_90'], 3)
+    vol2 = round(all_data.loc[stock2]['Volatility_90'], 3)
+    return cov / vol1 * vol2
 
 def cov_matrix(port_arr, var_m):
     df = pd.DataFrame(columns = port_arr)
@@ -98,6 +103,9 @@ def portfolio_returns(port_dict):
         r = round(all_data.loc[k]['Return_last_year'], 3)
         ret = ret + v * r
     return ret
+
+#def pick_least_variant_stock (port_dict, option_list):
+#    for stock in option_list:
         
 
     

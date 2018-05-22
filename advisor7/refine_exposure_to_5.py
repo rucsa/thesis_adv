@@ -3,8 +3,8 @@ import recommender as recom
 
 def getAllocations(client_portfolio, allSecurities, text = True):
     
-    stocks_alloc, bonds_alloc = client_portfolio.current_allocation(allSecurities)
-    recommended_stock_alloc, recommended_bonds_alloc = client_portfolio.recommended_allocation(client_portfolio.client['Risk_profile'])
+    stocks_alloc, bonds_alloc = client_portfolio.current_asset_allocation(allSecurities)
+    recommended_stock_alloc, recommended_bonds_alloc = client_portfolio.recommended_asset_allocation(client_portfolio.client['Risk_profile'])
     
     if text:
         pyfancy.pyfancy().cyan("Current allocation: {} stocks and {} bonds \n".format(stocks_alloc, bonds_alloc)).output()

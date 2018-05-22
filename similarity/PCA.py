@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
-allsecurities = pd.read_hdf('processed_similarity.hdf5', 'Datataset1/X')
+allsecurities = pd.read_hdf('processed_similarity.hdf5', 'Datataset1/X').drop(['Region_string', 'Sector_string'], axis = 1)
 #allsecurities = allsecurities.drop('Asset')
 
 k = 10

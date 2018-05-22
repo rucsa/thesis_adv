@@ -38,7 +38,7 @@ class ClientPortfolio(object):
     # allSecurities should be dict
     def addNewSecurity(self, security, shares, allSecurities):
         self.portfolio[security] = shares
-        
+        #pyfancy.pyfancy().bold().yellow("Added to portfolio stock {} with {} exposure \n".format(security, shares)).output()
 #        security_type = allSecurities[security]['Asset']
 #        if security_type == 'Equity':
 #            pyfancy.pyfancy().bold().yellow("Added to portfolio stock {} with {} exposure \n".format(security, shares)).output()
