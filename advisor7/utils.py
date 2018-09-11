@@ -113,7 +113,6 @@ def score_sectors(df, criterion, score):
              n = getattr(row, "Name") 
              if n not in score:
                  score[n] = []
-
              if s in criterion:
                  score[n].append(100)
              else:
@@ -131,7 +130,6 @@ def score_feature(df, score, feature):
         if n not in score:
             score[n] = []
         score[n].append(normalize_value(a, minimum, maximum))
-
     return score
 
 

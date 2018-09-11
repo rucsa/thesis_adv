@@ -363,24 +363,27 @@ def get_recommendations_from_clusters(X, held, all_data, model, max_clusters, di
             # save securities that are in the new cluster(s)
             option_list = pd.DataFrame()
             rest_of_stocks = pd.DataFrame()
+            option_list_cs, rest_of_stocks_cs = [], [] 
             for i in range(0, len(clusters_y)):
                 match = False
                 for j in range (0, len(diff)):
                     if clusters_y[i] == diff[j]:
                         # the new security to add will be taken from 
                         current_security = Y.iloc[i].to_frame(name = Y.iloc[i].name).T
-                        current_security['Cluster'] = clusters_y[i]
+                        option_list_cs.append(clusters_y[i])
                         option_list = pd.concat([option_list, current_security], axis = 0)
                         match = True
                 if match == False:
                     current_security = Y.iloc[i].to_frame(name = Y.iloc[i].name).T
-                    current_security['Cluster'] = clusters_y[i]
+                    rest_of_stocks_cs.append(clusters_y[i])
                     rest_of_stocks = pd.concat([rest_of_stocks, current_security], axis = 0)
                         
         else:
            c = c+1
     try:
-        return option_list, countP_keys, rest_of_stocks, labels
+        option_list = option_list.drop(columns = ['Cluster'])
+        rest_of_stocks = rest_of_stocks.drop(columns = ['Cluster'])
+        return option_list, countP_keys, rest_of_stocks, labels, option_list_cs, rest_of_stocks_cs
     except UnboundLocalError:
         print ("Reached max_clusters of {}. Try another portfolio".format(max_clusters))
         return False

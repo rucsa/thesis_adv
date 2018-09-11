@@ -9,7 +9,7 @@ import names
 
 
 ''''CLIENTS'''
-if True:
+if False:
     columns = ['Id', 'Name', 'Age', 'Retirement', 'Goal', 'Timeline', 'Risk_profile', 'Capital', 'Portfolio_Id']
     df = pd.DataFrame(columns = columns)
     risk_profiles = ['Defensive', 'Moderate Defensive', 'Balanced', 'Moderate Offensive', 'Offensive']
@@ -34,8 +34,8 @@ if True:
 
 ''' PORTFOLIOS '''
 if True:
+    
     data = pd.read_hdf('processed_similarity.hdf5', 'Datataset1/X')
-        
     columns = ['Asset1', 'Exposure1', 'Asset2', 'Exposure2', 'Asset3', 'Exposure3', 'Asset4', 'Exposure4', 'Asset5', 'Exposure5', 
                'Asset6', 'Exposure6', 'Asset7', 'Exposure7', 'Asset8', 'Exposure8', 'Asset9', 'Exposure9', 'Asset10', 'Exposure10', 
                'Asset11', 'Exposure11', 'Asset12', 'Exposure12', 'Asset13', 'Exposure13', 'Asset14', 'Exposure14', 'Asset15', 'Exposure15', 
